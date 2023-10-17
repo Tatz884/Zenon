@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "json-to-sql"
+version = "0.1.0"
+description = "Convert JSON to SQL"
+authors = ["Tatsuya Hayashi <tatsuya884.0201@gmail.com>"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.10, <3.12"
+numpy = "^1.26"
+pandas = "^2.1"
+asyncpg = "^0.28"

@@ -1,0 +1,10 @@
+FROM node:14  
+
+# Globally install browser-sync
+RUN npm install -g browser-sync
+
+# Set the working directory in the container to your backend directory
+WORKDIR /backend
+
+# Command to start browser-sync
+CMD ["browser-sync", "start", "--proxy", "backend:8000", "--files", "/backend/app/**/*.py", "--no-open"]

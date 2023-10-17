@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+
+  etl:
+    build:
+      context: ./etl
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./etl:/usr/src/app
+      - ./certs/development/database:/certs
+    depends_on:
+      - cockroachdb
+
+#   backend:
+#     build:
+#       context: ./backend
+#       dockerfile: Dockerfile
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       - ./backend:/usr/src/app
+#     environment:
+#       DATABASE_URL: "this is a place holder"
+  
+#   browsersync-for-backend-dev:
+#     ports:
+#       - "3000:3000"
+#       - "3001:3001"  # For Browsersync UI
+#     build:
+#       context: ./backend/app/utils
+#       dockerfile: Dockerfile.browsersync-for-dev
+#     volumes:
+#       - ./backend:/backend
+#     depends_on:
+#       - backend
+
+#   frontend:
+#     build:
+#       context: ./frontend
+#       dockerfile: Dockerfile
+#     ports:
+#       - "5000:5000"
+#     volumes:
+#       - ./frontend:/app # assuming your frontend working directory in its Dockerfile is /app
+#     environment:
+#       API_URL: "http://backend:8000" # this is how the frontend would communicate with the backend in this setup
+
+  cockroachdb:
+    build:
+      context: database
+      dockerfile: Dockerfile
+    ports:
+      - "26257:26257"
+      - "8080:8080"
+    volumes:
+      - cockroachdb-data:/cockroach/cockroach-data
+      - ./certs/development/database:/certs
+
+
+volumes:
+  cockroachdb-data:

@@ -1,0 +1,26 @@
+# Compiled Python files
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Logs and project structure
+logs.txt
+build.log
+project_structure.txt
+
+# Temporary files and directories
+*.log
+*.tmp
+*.temp
+
+# Certificates
+certs/
+
+# Development container configurations
+backend/.devcontainer/
+backend/.vscode/
+
+# Temporary data files used in ETL
+etl/data/extracted_data.json
+etl/data/transformed_data.csv
+etl/data/temp_db.sqlite
