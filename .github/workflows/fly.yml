@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v3
 
       # This step sets up flyctl
-      - uses: superfly/flyctl-actions/setup-flyctl@main
+      - uses: superfly/flyctl-actions/setup-flyctl@master
 
       # Modify this step to use the backend directory as the working directory
       - run: flyctl deploy --remote-only
