@@ -5,7 +5,7 @@ set -x # verbose log
 # Function to run initialization commands
 initialize_db() {
   # Sleep for a few seconds to allow CockroachDB to initialize
-  sleep 10
+  sleep 5
   # Now initialize the DB in insecure mode
   cockroach sql --insecure < /docker-entrypoint-initdb.d/init.sql
 }

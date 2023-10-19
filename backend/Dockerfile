@@ -40,5 +40,7 @@ COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/pytho
 # Copy the content of the local src directory to the working directory
 COPY . /usr/src/app/
 
+EXPOSE 8000
+
 # Specify the command to run on container start
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/usr/src/app"]

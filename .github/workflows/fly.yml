@@ -1,0 +1,22 @@
+name: Fly Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # This step sets up flyctl
+      - uses: superfly/flyctl-actions/setup-flyctl@main
+
+      # Modify this step to use the backend directory as the working directory
+      - run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        working-directory: backend

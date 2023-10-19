@@ -2,40 +2,42 @@ version: '3.8'
 
 services:
 
-  etl:
+  # etl:
+  #   build:
+  #     context: ./etl
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "9000:9000"
+  #   volumes:
+  #     - ./etl:/usr/src/app
+  #     - ./certs/development/database:/certs
+  #   networks:
+  #     - es-network
+  #   # depends_on:
+  #   #   - cockroachdb
+
+  backend:
     build:
-      context: ./etl
+      context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "9000:9000"
+      - "8080:8080"
     volumes:
-      - ./etl:/usr/src/app
-      - ./certs/development/database:/certs
-    depends_on:
-      - cockroachdb
-
-#   backend:
-#     build:
-#       context: ./backend
-#       dockerfile: Dockerfile
-#     ports:
-#       - "8000:8000"
-#     volumes:
-#       - ./backend:/usr/src/app
-#     environment:
-#       DATABASE_URL: "this is a place holder"
+      - ./backend:/usr/src/app
+    environment:
+      DATABASE_URL: "this is a place holder"
   
-#   browsersync-for-backend-dev:
-#     ports:
-#       - "3000:3000"
-#       - "3001:3001"  # For Browsersync UI
-#     build:
-#       context: ./backend/app/utils
-#       dockerfile: Dockerfile.browsersync-for-dev
-#     volumes:
-#       - ./backend:/backend
-#     depends_on:
-#       - backend
+  # browsersync-for-backend-dev:
+  #   ports:
+  #     - "3000:3000"
+  #     - "3001:3001"  # For Browsersync UI
+  #   build:
+  #     context: ./backend/app/utils
+  #     dockerfile: Dockerfile.browsersync-for-dev
+  #   volumes:
+  #     - ./backend:/backend
+  #   depends_on:
+  #     - backend
 
 #   frontend:
 #     build:
@@ -48,17 +50,67 @@ services:
 #     environment:
 #       API_URL: "http://backend:8000" # this is how the frontend would communicate with the backend in this setup
 
-  cockroachdb:
+  dagster:
     build:
-      context: database
+      context: ./dagster
       dockerfile: Dockerfile
     ports:
-      - "26257:26257"
-      - "8080:8080"
+      - "3000:3000"
     volumes:
-      - cockroachdb-data:/cockroach/cockroach-data
-      - ./certs/development/database:/certs
+      # Assuming you might want to persist Dagster's local storage for runs, events, schedules, etc.
+      - dagster_home:/opt/dagster/dagster_home
+    environment:
+      DAGSTER_HOME: /opt/dagster/dagster_home
+    restart: always
+    networks:
+      - es-network
 
+  # cockroachdb:
+  #   build:
+  #     context: database
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "26257:26257"
+  #     - "8080:8080"
+  #   volumes:
+  #     - cockroachdb-data:/cockroach/cockroach-data
+  #     - ./certs/development/database:/certs
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - es-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.2
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    networks:
+      - es-network
 
 volumes:
-  cockroachdb-data:
+  # cockroachdb-data:
+  dagster_home:
+  es-data:
+    driver: local
+
+networks:
+  es-network:
+    driver: bridge
