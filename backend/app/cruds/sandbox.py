@@ -10,7 +10,8 @@ import ssl
 
 # Define the mapping between SQLite columns and OutputModel keys
 MODE = os.getenv("MODE", "prod")  # default value is prod
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL", "Error: DATABASE_URL is not properly obtained")
+CERT_STRING = os.getenv("CERT_STRING", "Error: CERT_STRING is not properly obtained")
 
 COLUMN_MAPPING = {
     "id": "id",
@@ -43,7 +44,12 @@ async def CockroachDB_connect():
         query_params = urllib.parse.parse_qs(parsed.query)
 
         if query_params.get('sslmode') and query_params['sslmode'][0] == 'verify-full':
-            ssl_context = ssl.create_default_context(cafile='/certs/root.crt')
+            if os.path.exists('/certs/root.crt'): # prod in local environment
+                ssl_context.load_verify_locations(cafile='/certs/root.crt')
+            else: # prod in fly.io environment
+                ssl_context.load_verify_locations(cadata=CERT_STRING)
+            print(ssl_context)
+
             ssl_context.check_hostname = True
             ssl_context.verify_mode = ssl.CERT_REQUIRED
 
