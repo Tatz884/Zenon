@@ -1,5 +1,5 @@
 from typing import List, Union, Dict, Optional
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel, RootModel, Field
 
 ChangeLogicType = Optional[Union[str, List[str], Dict[str, str]]]
 
@@ -14,7 +14,20 @@ class WordInfo(BaseModel):
 class WordsList(RootModel[list[WordInfo]]):
     pass
 
-
-
 class WordSuggestion(BaseModel):
     word: str
+
+class WordInfoV2(BaseModel):
+    id: int
+    original_form: str
+    pos: str
+    glosses: str
+    forms_json: str
+    flattened_forms: Optional[str] = Field(default=None)
+    lang: Optional[str] = Field(default=None)
+
+
+
+
+class WordInfoV2List(RootModel[list[WordInfoV2]]):
+    pass

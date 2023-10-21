@@ -21,6 +21,4 @@ backend/.devcontainer/
 backend/.vscode/
 
 # Temporary data files used in ETL
-etl/data/extracted_data.json
-etl/data/transformed_data.csv
-etl/data/temp_db.sqlite
+*/data/

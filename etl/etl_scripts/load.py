@@ -3,6 +3,7 @@ import tempfile
 import os
 import json
 import asyncio
+import urllib.parse
 import ssl
 import asyncpg
 from elasticsearch import Elasticsearch, helpers
@@ -19,7 +20,9 @@ def timer_decorator(func):
         return result
     return wrapper
 
+@timer_decorator
 def load_into_sqlite(df):
+    print("loading into SQLite...")
     # Convert all lists and dicts in the entire DataFrame to strings
     df = df.map(lambda x: json.dumps(x) if isinstance(x, (list, dict)) else x)
     # Create a temporary file
@@ -31,7 +34,7 @@ def load_into_sqlite(df):
     # Commit any changes
     conn.commit()
 
-    sqlite_filepath = "./data/temp_db.sqlite"
+    sqlite_filepath = "/data/temp_db.sqlite"
 
     if os.path.exists(sqlite_filepath):
     # Remove the file
@@ -70,47 +73,83 @@ def inspect_structure(data, indent=0, depth=6):
         print(f"{prefix}Type: {type(data).__name__}, Value: {data}")
 
 
+@timer_decorator
+def load_into_cockroachDB(new_records, dev_mode=False, prod_mode=False):
 
-def load_into_cockroachDB(new_records):
-    inspect_structure(new_records)
     print("loading into cockroachDB...")
-    async def bulk_insert(records):
-        # Create an SSL context
-        ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-        ctx.load_cert_chain(certfile='/certs/client.root.crt', keyfile='/certs/client.root.key')
-        ctx.load_verify_locations(cafile='/certs/ca.crt')
-        # conn = await asyncpg.connect(user='username', password='password', database='defaultdb', host='cockroachdb', port='26257')
-        conn = await asyncpg.connect(
-            # user='root',
-            # password='password',
-            database='defaultdb',
-            host='cockroachdb',
-            port='26257',
-            # ssl=ctx
-        )
+    database_url = os.environ["DATABASE_URL"]
+    parsed = urllib.parse.urlparse(database_url)
 
+    async def connect():
+        if prod_mode:
+            print("using cockroachDB cloud server")
+            # Determine SSL mode and root cert path based on DATABASE_URL
+            ssl_context = None
+            query_params = urllib.parse.parse_qs(parsed.query)
+
+            if query_params.get('sslmode'):
+                if query_params['sslmode'][0] == 'verify-full':
+                    ssl_context = ssl.create_default_context(cafile='/certs/root.crt')
+                    ssl_context.check_hostname = True
+                    ssl_context.verify_mode = ssl.CERT_REQUIRED
+
+            return await asyncpg.connect(
+                user=parsed.username,
+                password=parsed.password,
+                database=parsed.path[1:],
+                host=parsed.hostname,
+                port=parsed.port,
+                ssl=ssl_context
+            )
+        elif dev_mode:
+            print("using cockroachDB local server")
+            return await asyncpg.connect(
+                database='defaultdb',
+                host='cockroachdb',
+                port='26257',
+            )
+
+
+    async def load_data(conn):
         await conn.execute('''
             DROP TABLE IF EXISTS polish;
         ''')
 
         await conn.execute('''
             CREATE TABLE IF NOT EXISTS polish (
-                index SERIAL PRIMARY KEY,
-                word VARCHAR(100),
+                id SERIAL PRIMARY KEY,
+                original_form VARCHAR(100),
                 pos VARCHAR(10),
                 glosses TEXT,
-                forms JSONB,
+                forms_json JSONB,
+                flattened_forms TEXT[],
                 lang VARCHAR(10)
             )
         ''')
 
-        await conn.copy_records_to_table('polish', records=records)
-        await conn.close()
-        print("Data was loaded onto CockroachDB")
+        await conn.copy_records_to_table('polish', records=new_records)
+
+    async def bulk_insert(records):
+        conn = await connect()
+
+        try:
+            # Start a transaction
+            async with conn.transaction():
+                await load_data(conn)
+                print("Data was loaded onto CockroachDB")
+
+        except Exception as e:
+            print(f"Error loading data: {e}")
+            # Transaction will be rolled back automatically if an exception is raised
+        finally:
+            # Always close the connection when done
+            await conn.close()
+
     asyncio.run(bulk_insert(new_records))
 
+
 @timer_decorator
-def load_into_elasticsearch(df):
+def load_into_elasticsearch(es_records):
 
     print("load data into elasticsearch")
 
@@ -119,24 +158,8 @@ def load_into_elasticsearch(df):
     port=9200
     es = Elasticsearch([f'http://{host}:{port}'])
 
-
-    # Convert the DataFrame into a list of dicts.
-    def df_to_records(df):
-        return df.to_dict(orient='records')
-    
-    # Convert records to Elasticsearch format.
-    def records_to_es_format(records, index_name):
-        for record in records:
-            yield {
-                "_op_type": "index",
-                "_index": index_name,
-                "_source": record
-            }
-
     index_name = 'polish'
     es.indices.delete(index=index_name)
-    records = df_to_records(df)
-    es_records = list(records_to_es_format(records, index_name))
 
     # Index records into Elasticsearch.
     helpers.bulk(es, es_records)

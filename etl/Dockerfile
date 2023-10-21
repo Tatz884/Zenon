@@ -35,4 +35,4 @@ RUN poetry install --no-root --no-dev -vvv
 COPY . .
 
 # Command to run the script
-CMD ["poetry", "run", "python", "main.py"]
+CMD ["poetry", "run", "python", "main.py", "--use-sqlite", "--sandbox-transformed", "--dev"]

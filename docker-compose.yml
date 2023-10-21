@@ -2,42 +2,49 @@ version: '3.8'
 
 services:
 
-  # etl:
-  #   build:
-  #     context: ./etl
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "9000:9000"
-  #   volumes:
-  #     - ./etl:/usr/src/app
-  #     - ./certs/development/database:/certs
-  #   networks:
-  #     - es-network
-  #   # depends_on:
-  #   #   - cockroachdb
+  etl:
+    build:
+      context: ./etl
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./etl:/usr/src/app
+      - ./database/data:/data
+      - ./certs/production/database:/certs
+    env_file:
+      - ~/.secrets/zenon/database.env
+    # depends_on:
+    #   - cockroachdb
+    # networks:
+    #   - es-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8000:8000"
     volumes:
       - ./backend:/usr/src/app
+      - ./database/data:/data
+      - ./certs/production/database:/certs
+    env_file:
+      - ~/.secrets/zenon/database.env
     environment:
-      DATABASE_URL: "this is a place holder"
+      - MODE=${MODE}
   
-  # browsersync-for-backend-dev:
-  #   ports:
-  #     - "3000:3000"
-  #     - "3001:3001"  # For Browsersync UI
-  #   build:
-  #     context: ./backend/app/utils
-  #     dockerfile: Dockerfile.browsersync-for-dev
-  #   volumes:
-  #     - ./backend:/backend
-  #   depends_on:
-  #     - backend
+  browsersync-for-backend-dev:
+    ports:
+      - "3000:3000"
+      - "3001:3001"  # For Browsersync UI
+    build:
+      context: ./backend/app/utils
+      dockerfile: Dockerfile.browsersync-for-dev
+    volumes:
+      - ./backend:/backend
+    depends_on:
+      - backend
 
 #   frontend:
 #     build:
@@ -65,16 +72,17 @@ services:
     networks:
       - es-network
 
-  # cockroachdb:
-  #   build:
-  #     context: database
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "26257:26257"
-  #     - "8080:8080"
-  #   volumes:
-  #     - cockroachdb-data:/cockroach/cockroach-data
-  #     - ./certs/development/database:/certs
+  cockroachdb:
+    build:
+      context: database
+      dockerfile: Dockerfile
+    ports:
+      - "26257:26257"
+      - "8080:8080"
+      - "26258:26258"
+    volumes:
+      - cockroachdb-data:/cockroach/cockroach-data
+      - ./certs/development/database:/certs
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
@@ -106,7 +114,7 @@ services:
       - es-network
 
 volumes:
-  # cockroachdb-data:
+  cockroachdb-data:
   dagster_home:
   es-data:
     driver: local

@@ -1,5 +1,5 @@
 # Use an official Python runtime as a base image
-FROM python:3.12-slim as builder
+FROM python:3.11-slim as builder
 
 # Set environment variables to ensure Python output is unbuffered and doesn't write .pyc files
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -24,18 +24,19 @@ RUN pip install --upgrade pip \
     && poetry config virtualenvs.create false
 
 # Copy only requirements to cache them in docker layer
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml ./
+# COPY poetry.lock ./
 
 # Install dependencies
 RUN poetry install --no-root --no-dev
 
 # Now, set up our application
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 WORKDIR /usr/src/app
 
 # Copy installed dependencies from builder
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
 # Copy the content of the local src directory to the working directory
 COPY . /usr/src/app/
