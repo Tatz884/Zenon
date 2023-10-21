@@ -40,10 +40,11 @@ async def CockroachDB_connect():
 
     if MODE == "prod":
         print("using cockroachDB cloud server")
-        ssl_context = None
+        
         query_params = urllib.parse.parse_qs(parsed.query)
 
         if query_params.get('sslmode') and query_params['sslmode'][0] == 'verify-full':
+            ssl_context = ssl.create_default_context()
             if os.path.exists('/certs/root.crt'): # prod in local environment
                 ssl_context.load_verify_locations(cafile='/certs/root.crt')
             else: # prod in fly.io environment
