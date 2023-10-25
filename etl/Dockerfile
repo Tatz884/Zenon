@@ -1,38 +1,31 @@
-# Use an official Python runtime as the base image
 FROM python:3.11-slim
 
-# Set environment variables to ensure Python output is unbuffered and doesn't write .pyc files
+RUN mkdir -p /opt/dagster/app
+
+RUN pip install dagster dagster-webserver pandas asyncpg
+
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-ENV PATH="$PATH:/root/.poetry/bin"
 
-# Use Polling instead of inotify to watch real-time changes in the code, since inotify has some compatibility issues with docker very much
-ENV WATCH_USE_POLLING=true
+ENV DAGSTER_HOME=/opt/dagster/app/
 
-# Set the working directory in the container
-WORKDIR /usr/src/app
+WORKDIR /opt/dagster/app/
 
-# Install system dependencies needed for psycopg2 and other potential packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    && apt-get -y clean && rm -rf /var/lib/apt/lists/*
+EXPOSE 4000
 
-# Install poetry
-RUN pip install --upgrade pip \
-    && pip install poetry \
-    && poetry config virtualenvs.create false
+# Set a default value for the build-time variable
+# this arg is overriden to be false if using docker-compose build in development
+ARG COPY_CONTENTS=true 
 
-# Copy pyproject.toml and poetry.lock (if exists) into the container
-COPY pyproject.toml ./
-# COPY poetry.lock ./  
-# If you dont have a poetry.lock yet, this will fail. Comment it out in that case.
+# Always copy contents to a temporary location
+COPY . /tmp_src/
 
-# Install dependencies using poetry
-RUN poetry install --no-root --no-dev -vvv
+# Use shell command to conditionally copy contents based on the ARG value
+RUN if [ "$COPY_CONTENTS" = "true" ]; then cp -r /tmp_src/* /opt/dagster/app/; fi && \
+    rm -rf /tmp_src/
+# To minimize image size, `rm -rf /tmp_src/` command must be chained here
+# instead of separate `RUN ...`, since every `RUN` command creates an immutable layer
+# in docker image, that contributes to final image size
 
-# Copy the script into the container
-COPY . .
 
-# Command to run the script
-CMD ["poetry", "run", "python", "main.py", "--use-sqlite", "--sandbox-transformed", "--dev"]
+ENTRYPOINT ["/opt/dagster/app/start_dagster.sh"]
