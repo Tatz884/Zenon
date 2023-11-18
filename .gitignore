@@ -20,5 +20,14 @@ certs/
 backend/.devcontainer/
 backend/.vscode/
 
-# Temporary data files used in ETL
+# Temporary files used in ETL
 */data/
+*/.logs_queue/
+*/.nux/
+*/.telemetry/
+*/history/
+*/logs/
+*/storage/
+
+# Temporary folders of my-dagster-project
+my-dagster-project/

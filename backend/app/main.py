@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from .api.v1 import words as api_words  # Import the 'words' module with an alias
 from .cruds import words as crud_words  # Same here
-from .cruds import words_mock as crud_words_mock
 
 print(api_words.get_suggestions)
 

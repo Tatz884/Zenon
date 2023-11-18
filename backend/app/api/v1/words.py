@@ -1,25 +1,16 @@
-from fastapi import APIRouter, Depends
-from ...schemas.words import WordSuggestion, WordsList, WordInfo, WordInfoV2, WordInfoV2List
-from ...cruds.sandbox import SQLite_sandbox, CockroachDB_sandbox
+from fastapi import APIRouter
+from ...schemas.words import WordInfoV2, WordInfoV2List
+from ...cruds.words import SQLite_sandbox, CockroachDB_sandbox
 from typing import List, Callable
 import os
 
 MODE = os.getenv("MODE", "prod") # default value is prod
 
-# from ...utils.dependencies import get_word_source
-
 router = APIRouter()
 
-@router.get("/suggestions/", response_model=None)
-async def get_suggestions(query: str, limit: int = 10):
-    # TO DO: write DB logic here
-    
-    # Mapping the result to the schema
-    return None
 
-
-@router.get("/aaa/", response_model=WordInfoV2List)
-async def aaa(user_input: str, skip: int = 0, limit: int = 1):
+@router.get("/suggestions/", response_model=WordInfoV2List)
+async def get_suggestions(user_input: str, skip: int = 0, limit: int = 1):
 
     rows = None
     if MODE == "dev_SQLite":

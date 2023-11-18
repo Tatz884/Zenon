@@ -17,21 +17,21 @@ import asyncpg
 # import time
 
 @asset
-def load_into_sqlite(filter_and_transform_df: pd.DataFrame):
+def load_into_sqlite(finish_process_df: pd.DataFrame):
     logger=get_dagster_logger()
     logger.info("loading into SQLite...")
     # Convert all lists and dicts in the entire DataFrame to strings
-    filter_and_transform_df = filter_and_transform_df.map(lambda x: json.dumps(x) if isinstance(x, (list, dict)) else x)
+    finish_process_df = finish_process_df.map(lambda x: json.dumps(x) if isinstance(x, (list, dict)) else x)
     # Create a temporary file
     temp_db = tempfile.NamedTemporaryFile(delete=False).name
     # Connect to the SQLite temporary database file
     conn = sqlite3.connect(temp_db)
     # Use the to_sql method to write records stored in the DataFrame to the SQLite database
-    filter_and_transform_df.to_sql('polish', conn, if_exists='replace')
+    finish_process_df.to_sql('polish', conn, if_exists='replace')
     # Commit any changes
     conn.commit()
 
-    sqlite_filepath = "data/temp_db.sqlite"
+    sqlite_filepath = "storage/temp_db.sqlite"
 
     if os.path.exists(sqlite_filepath):
     # Remove the file
@@ -100,7 +100,11 @@ def load_into_cockroachDB_dev(dataframe_to_records: List):
             # Transaction will be rolled back automatically if an exception is raised
         finally:
             # Always close the connection when done
+            print("connection is closing...")
             await conn.close()
+            print("connection is closed")
+
+    print("connection is closed")
 
     asyncio.run(bulk_insert(dataframe_to_records))
 

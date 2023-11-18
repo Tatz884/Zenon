@@ -1,17 +1,10 @@
-import requests
-import json
-from dagster import (
-    asset,
-    AssetExecutionContext,
-    get_dagster_logger,
-    MetadataValue
-)
-from typing import List, Tuple
-
 import pandas as pd
 import ast
 import json
 import time
+import colorama
+
+colorama.init(autoreset=True)  # Automatically reset to default color after every print
 
 # Utility functions
 def timer_decorator(func):
@@ -44,15 +37,10 @@ def get_glosses_from_string(s):
     flattened_glosses = flatten_list_of_lists(glosses_list_of_lists)
     return ', '.join(flattened_glosses)
 
-@asset
-def filter_and_transform_df(
-    context: AssetExecutionContext,
-    json_items: List, 
-    ) -> pd.DataFrame:
+@timer_decorator
+def filter_and_transform(json_items, sandbox_transformed=False, preview_column=None):
     """Filter and transform a list of JSON items into a list of records."""
     
-    logger = get_dagster_logger()
-
     # Remove items that don't have "forms" as children
     filtered_data = [item for item in json_items if "forms" in item]
 
@@ -63,39 +51,58 @@ def filter_and_transform_df(
 
     df['glosses'] = df.senses.apply(get_glosses_from_string)
 
-    # if sandbox_transformed:
-    #     sandboxing_transformation(df, preview_column=preview_column)
+    if sandbox_transformed:
+        sandboxing_transformation(df, preview_column=preview_column)
 
-    filter_and_transform_df = df[['word', 'pos', 'glosses', 'forms', 'flattened_forms', 'lang']]
+    df = df[['word', 'pos', 'glosses', 'forms', 'flattened_forms', 'lang']]
 
-    context.add_output_metadata(
-        metadata={
-            "num_records": len(filter_and_transform_df),  # Metadata can be any key-value pair
-            "preview": MetadataValue.md(filter_and_transform_df.head().to_markdown()),
-            # The `MetadataValue` class has useful static methods to build Metadata
-        }
-    )
+    return df
 
-    logger.info(filter_and_transform_df.head())
+def sandboxing_transformation(df, preview_column=None):
+    """If you want to experiment data conversion, try modifying here"""
 
-    return filter_and_transform_df
+    print(colorama.Fore.GREEN + colorama.Style.BRIGHT + "All column names of df:")
+    print(df.columns.tolist())  
+    print("")
+    print(colorama.Fore.GREEN + colorama.Style.BRIGHT + "The content of df:")
+    with pd.option_context('display.max_rows', None, 
+                       'display.max_columns', None,
+                       'display.width', None,
+                       'display.max_colwidth', None):
+        if preview_column:
+            print(df[preview_column].head())
+        else:
+            print(df.head())
+    
+    pass
 
-@asset
-def dataframe_to_records(
-    filter_and_transform_df: pd.DataFrame
-    ) -> List:
+def dataframe_to_records(df):
     """Convert DataFrame to a list of records, converting the "forms" column to JSON."""
-    logger = get_dagster_logger()
-    records = filter_and_transform_df.reset_index().to_records(index=False)
+    records = df.reset_index().to_records(index=False)
 
     # This will include the index name as the first column
-    columns = ['index'] + list(filter_and_transform_df.columns)
-    dataframe_to_records = [
+    columns = ['index'] + list(df.columns)
+    new_records = [
         tuple(
             json.dumps(record[col], ensure_ascii=False) if col == "forms" else record[col]
             for col in columns
         )
         for record in records
     ]
-    logger.info(dataframe_to_records)
-    return dataframe_to_records
+    return new_records
+
+@timer_decorator
+def df_to_es_format(df, index_name='polish'):
+    records = df.to_dict(orient='records')
+    es_records = list(records_to_es_format(records, index_name))
+    return es_records
+
+# Convert records to Elasticsearch format.
+@timer_decorator
+def records_to_es_format(records, index_name):
+    for record in records:
+        yield {
+            "_op_type": "index",
+            "_index": index_name,
+            "_source": record
+        }

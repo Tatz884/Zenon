@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
 
-  etl:
+  etl_old:
     build:
-      context: ./etl
+      context: ./etl_old
       dockerfile: Dockerfile
     ports:
       - "9000:9000"
     volumes:
-      - ./etl:/usr/src/app
+      - ./etl_old:/usr/src/app
       - ./database/data:/data
       - ./certs/production/database:/certs
     env_file:
@@ -19,6 +19,25 @@ services:
     # networks:
     #   - es-network
 
+  etl:
+    build:
+      context: ./etl
+      dockerfile: Dockerfile
+      args:
+        - COPY_CONTENTS=false # overrides COPY_CONTENTS in Dockerfile
+    ports:
+      - "4000:4000"
+    volumes:
+      # Mount local codebase
+      - ./etl:/opt/dagster/app
+      - ./database/data:/data
+      - ./certs/production/database:/certs
+    environment:
+      DAGSTER_HOME: /opt/dagster/app
+    env_file:
+      - ~/.secrets/zenon/database.env
+    restart: always
+
   backend:
     build:
       context: ./backend
@@ -27,7 +46,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/usr/src/app
-      - ./database/data:/data
+      - ./database/data:/storage
       - ./certs/production/database:/certs
     env_file:
       - ~/.secrets/zenon/database.env
@@ -57,20 +76,25 @@ services:
 #     environment:
 #       API_URL: "http://backend:8000" # this is how the frontend would communicate with the backend in this setup
 
-  dagster:
-    build:
-      context: ./dagster
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    volumes:
-      # Assuming you might want to persist Dagster's local storage for runs, events, schedules, etc.
-      - dagster_home:/opt/dagster/dagster_home
-    environment:
-      DAGSTER_HOME: /opt/dagster/dagster_home
-    restart: always
-    networks:
-      - es-network
+  # my-dagster-project:
+  #   build:
+  #     context: ./my-dagster-project
+  #     dockerfile: Dockerfile
+  #     args:
+  #       - COPY_CONTENTS=false # overrides COPY_CONTENTS in Dockerfile
+  #   ports:
+  #     - "4000:4000"
+  #   volumes:
+  #     # Mount local codebase
+  #     - ./my-dagster-project:/opt/dagster/app
+  #     - ./certs/production/database:/certs
+  #   environment:
+  #     DAGSTER_HOME: /opt/dagster/app
+  #   env_file:
+  #     - ~/.secrets/zenon/database.env
+  #   restart: always
+  #   # networks:
+  #   #   - es-network
 
   cockroachdb:
     build:
@@ -115,7 +139,7 @@ services:
 
 volumes:
   cockroachdb-data:
-  dagster_home:
+  dagster:
   es-data:
     driver: local
 
