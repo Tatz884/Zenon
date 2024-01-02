@@ -52,6 +52,14 @@ def filter_and_obtain_df_all_words(
 
     filter_and_obtain_df_all_words = df
 
+    context.add_output_metadata(
+        metadata={
+            "num_records": len(df),  # Metadata can be any key-value pair
+            "whole_df_preview": MetadataValue.md(df.head().to_markdown()),
+            "forms_preview": MetadataValue.md(df.forms.head().to_markdown()),
+        }
+    )
+
     return filter_and_obtain_df_all_words
 
 @asset
@@ -72,6 +80,14 @@ def filter_and_obtain_df_verbs(
     df['filtered_forms'] = df['forms'].apply(filter_tags)
 
     filter_and_obtain_df_verbs = df
+
+    context.add_output_metadata(
+        metadata={
+            "num_records": len(df),  # Metadata can be any key-value pair
+            "whole_df_preview": MetadataValue.md(df.head().to_markdown()),
+            "forms_preview": MetadataValue.md(df.forms.head().to_markdown()),
+        }
+    )
 
     return filter_and_obtain_df_verbs
 
@@ -94,4 +110,41 @@ def filter_and_obtain_df_adjectives(
 
     filter_and_obtain_df_adjectives = df
 
+    context.add_output_metadata(
+        metadata={
+            "num_records": len(df),  # Metadata can be any key-value pair
+            "whole_df_preview": MetadataValue.md(df.head().to_markdown()),
+            "forms_preview": MetadataValue.md(df.forms.head().to_markdown()),
+        }
+    )
+
     return filter_and_obtain_df_adjectives
+
+@asset
+def filter_and_obtain_df_adverbs(
+    context: AssetExecutionContext,
+    json_adverbs: List, 
+    ) -> pd.DataFrame:
+    """Filter a list of JSON items by rows, and transform it into a dataframe."""
+    
+    logger = get_dagster_logger()
+
+    # Remove items that don't have "forms" as children
+    filtered_data = [item for item in json_adverbs if "forms" in item]
+
+    # Convert the filtered data to a dataframe
+    df = pd.json_normalize(filtered_data)
+
+    df['filtered_forms'] = df['forms'].apply(filter_tags)
+
+    filter_and_obtain_df_adverbs = df
+
+    context.add_output_metadata(
+        metadata={
+            "num_records": len(df),  # Metadata can be any key-value pair
+            "whole_df_preview": MetadataValue.md(df.head().to_markdown()),
+            "forms_preview": MetadataValue.md(df.forms.head().to_markdown()),
+        }
+    )
+
+    return filter_and_obtain_df_adverbs

@@ -13,7 +13,7 @@ import json
 @asset
 def inspect_forms(
     context: AssetExecutionContext,
-    nest_forms_apply: pd.DataFrame, 
+    start_process_df: pd.DataFrame, 
     ) -> None:
     """Filter a list of JSON items by rows, and transform it into a dataframe."""
     
@@ -24,13 +24,23 @@ def inspect_forms(
     def contains_form(form_list):
         return any(d.get('form') == 'destruują' for d in form_list)
 
-    df = nest_forms_apply
+    def specify_noun(form_list):
+        return any('decl-noun' in d.get('form', '') for d in form_list)
+    
+    def specify_verb(form_list):
+        return any('conj-verb' in d.get('form', '') for d in form_list)
+
+    df = start_process_df
     # Remove items that don't have "forms" as children
-    exemplar_rows = df[df['forms'].apply(contains_form)]
+    exemplar_rows_by_form = df[df['forms'].apply(contains_form)]
+    exemplar_rows_by_noun = df[df['forms'].apply(specify_noun)]
+    exemplar_rows_by_verb = df[df['forms'].apply(specify_verb)]
 
     context.add_output_metadata(
         metadata={
-            "exemplar_rows_preview": MetadataValue.md(exemplar_rows.head().to_markdown()),
+            "exemplar_rows_by_form_preview": MetadataValue.md(exemplar_rows_by_form.head().to_markdown()),
+            "exemplar_rows_by_noun_preview": MetadataValue.md(exemplar_rows_by_noun.head().to_markdown()),
+            "exemplar_rows_by_verb_preview": MetadataValue.md(exemplar_rows_by_verb.head().to_markdown()),
         }
     )
 
