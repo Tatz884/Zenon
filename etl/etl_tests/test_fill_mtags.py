@@ -1,5 +1,5 @@
 import pytest
-from fill_mtags import process_entries
+from etl.assets.transform.fill_mtags import process_entries
 from unittest.mock import patch
 
 
@@ -64,10 +64,10 @@ def tag_definitions():
     }
 
 # Test when inflection type is None
-@patch('fill_mtags.get_inflection_type', return_value=None)
+@patch('etl.assets.transform.fill_mtags.get_inflection_type', return_value=None)
 def test_process_entries_no_inflection(mock_get_inflection_type):
     result = process_entries(no_entries)
-    assert result is None
+    assert result == ([], [], [])
 
 # Test for conjugation inflection type
 def test_przemoknę():

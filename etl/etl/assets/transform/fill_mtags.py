@@ -44,7 +44,8 @@ import pandas as pd
 # {'form': 'przemoknięto', 'tags': ['impersonal', 'past'], 'source': 'conjugation'}
 # ]
 
-# data = [{'form': '', 'source': 'declension', 'tags': ['table-tags']}, {'form': 'pl-decl-numeral', 'source': 'declension', 'tags': ['inflection-template']}, {'form': 'kilkunastu', 'tags': ['nominative', 'plural', 'virile'], 'source': 'declension'}, {'form': 'kilkanaście', 'tags': ['nominative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['genitive', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['dative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['accusative', 'plural', 'virile'], 'source': 'declension'}, {'form': 'kilkanaście', 'tags': ['accusative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastoma', 'tags': ['instrumental', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['locative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['plural', 'virile', 'vocative'], 'source': 'declension'}, {'form': 'kilkanaście', 'tags': ['plural', 'vocative'], 'source': 'declension'}]
+data = [{'form': '', 'source': 'declension', 'tags': ['table-tags']}, {'form': 'pl-decl-numeral', 'source': 'declension', 'tags': ['inflection-template']}, {'form': 'kilkunastu', 'tags': ['nominative', 'plural', 'virile'], 'source': 'declension'}, {'form': 'kilkanaście', 'tags': ['nominative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['genitive', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['dative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['accusative', 'plural', 'virile'], 'source': 'declension'}, {'form': 'kilkanaście', 'tags': ['accusative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastoma', 'tags': ['instrumental', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['locative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['plural', 'virile', 'vocative'], 'source': 'declension'}, {'form': 'kilkanaście', 'tags': ['plural', 'vocative'], 'source': 'declension'}]
+
 
 # data = [{'form': 'większy', 'tags': ['comparative']}, {'form': 'największy', 'tags': ['superlative']}, {'form': 'dużo', 'tags': ['adverb']}, {'form': 'duższy', 'tags': ['Middle', 'Polish', 'comparative']}, {'form': 'naduższy', 'tags': ['Middle', 'Polish', 'superlative']}, {'form': 'najduższy', 'tags': ['Middle', 'Polish', 'superlative']}, {'form': '', 'source': 'declension', 'tags': ['table-tags']}, {'form': 'pl-decl-adj-auto', 'source': 'declension', 'tags': ['inflection-template']}, {'form': 'duży', 'tags': ['masculine', 'nominative', 'singular', 'vocative'], 'source': 'declension'}, {'form': 'duże', 'tags': ['neuter', 'nominative', 'singular', 'vocative'], 'source': 'declension'}, {'form': 'duża', 'tags': ['feminine', 'nominative', 'singular', 'vocative'], 'source': 'declension'}, {'form': 'duzi', 'tags': ['nominative', 'plural', 'virile', 'vocative'], 'source': 'declension'}, {'form': 'duże', 'tags': ['nominative', 'nonvirile', 'plural', 'vocative'], 'source': 'declension'}, {'form': 'dużego', 'tags': ['genitive', 'masculine', 'neuter', 'singular'], 'source': 'declension'}, {'form': 'dużej', 'tags': ['feminine', 'genitive', 'singular'], 'source': 'declension'}, {'form': 'dużych', 'tags': ['genitive', 'plural'], 'source': 'declension'}, {'form': 'dużemu', 'tags': ['dative', 'masculine', 'neuter', 'singular'], 'source': 'declension'}, {'form': 'dużej', 'tags': ['dative', 'feminine', 'singular'], 'source': 'declension'}, {'form': 'dużym', 'tags': ['dative', 'plural'], 'source': 'declension'}, {'form': 'dużego', 'tags': ['accusative', 'animate', 'masculine', 'singular'], 'source': 'declension'}, {'form': 'duży', 'tags': ['accusative', 'inanimate', 'masculine', 'singular'], 'source': 'declension'}, {'form': 'duże', 'tags': ['accusative', 'neuter', 'singular'], 'source': 'declension'}, {'form': 'dużą', 'tags': ['accusative', 'feminine', 'singular'], 'source': 'declension'}, {'form': 'dużych', 'tags': ['accusative', 'plural', 'virile'], 'source': 'declension'}, {'form': 'duże', 'tags': ['accusative', 'nonvirile', 'plural'], 'source': 'declension'}, {'form': 'dużym', 'tags': ['instrumental', 'masculine', 'neuter', 'singular'], 'source': 'declension'}, {'form': 'dużą', 'tags': ['feminine', 'instrumental', 'singular'], 'source': 'declension'}, {'form': 'dużymi', 'tags': ['instrumental', 'plural'], 'source': 'declension'}, {'form': 'dużym', 'tags': ['locative', 'masculine', 'neuter', 'singular'], 'source': 'declension'}, {'form': 'dużej', 'tags': ['feminine', 'locative', 'singular'], 'source': 'declension'}, {'form': 'dużych', 'tags': ['locative', 'plural'], 'source': 'declension'}]
 
@@ -52,7 +53,7 @@ import pandas as pd
 
 # Tag categories
 CASE_TAGS =  {'nominative', 'genitive', 'dative', 'accusative', 'instrumental', 'locative', 'vocative'}
-TENSE_TAGS = {'present', 'past', 'future', 'conditional', 'imperative'}
+TENSE_TAGS = {'infinitive', 'present', 'past', 'future', 'conditional', 'imperative'}
 PERSON_TAGS = {'first-person', 'second-person', 'third-person', 'impersonal'}
 NUMBER_TAGS = {'singular', 'plural'}
 GENDER_TAGS = {'masculine', 'feminine', 'neuter'}
@@ -64,22 +65,26 @@ ALL_TAGS = CASE_TAGS | TENSE_TAGS | PERSON_TAGS | NUMBER_TAGS | GENDER_TAGS | VI
 
 #####
 ##### turn zero: get inflection type #####
+def get_inflection_from_source(data):
+    """returns the first one as a string (e.g. 'pl-conj-ai').
+    
+    Note:it is possible that sometimes multiple inflection templates exist, but they are not very different
+    e.g. if the one inflection template is pl-conj-ai, then another template is pl-conj-ai-IX,
+    but not pl-decl or pl-conj-ap. Thus this function returns the string instead of the list"""
+    for item in data:
+        if item.get('source'):
+            return item['source']
+    return None  # Return None if no match found
+
 def get_inflection_type(data):
     """
     Returns 'conj' if the output of get_inflection_type contains 'conj'.
     """
-    for item in data:
-        if isinstance(item, dict):
-            if item.get('tags') == ["inflection-template"]:
-                if 'conj' in item['form']:
-                    return 'conjugation'
-                else:
-                    return 'declension'
-    for item in data:
-        if isinstance(item, dict):
-            # Now it's safe to use 'get'
-            if item.get('source'):
-                return item['source']
+    inflection_type = get_inflection_from_source(data)
+    if inflection_type and 'conjugation' in inflection_type:
+        return 'conjugation'
+    elif inflection_type and 'declension' in inflection_type:
+        return 'declension'
     return None  # Return None if 'conj' is not found or get_inflection_type returns None
 
 
@@ -388,7 +393,7 @@ def update_person_index(entry, previous_entry, current_index, current_number_tag
 
     return current_index
 
-def validate_and_update_entry_tags(entry, current_person_index, data):
+def validate_and_update_entry_tags(entry, current_person_index):
     """Validate and update the entry's person tags."""
     entry_tags = set(entry['tags'])
     person_tags_in_entry = entry_tags & set(PERSON_SEQUENCE)
@@ -412,12 +417,15 @@ def process_person_tags(data, global_tags):
     is_first_iteration = True
     previous_entry = None
 
+    tenses_needing_person = {'present', 'past', 'future', 'conditional', 'imperative'}
+
     for entry in processed_data:
-        current_index = update_person_index(entry, previous_entry, current_index, current_number_tags, is_first_iteration)
-        validate_and_update_entry_tags(entry, current_index, data)
-        is_first_iteration = False
-        current_number_tags = set(entry['tags']) & NUMBER_TAGS
-        previous_entry = entry
+        if set(entry['tags']) & tenses_needing_person:
+            current_index = update_person_index(entry, previous_entry, current_index, current_number_tags, is_first_iteration)
+            validate_and_update_entry_tags(entry, current_index)
+            is_first_iteration = False
+            current_number_tags = set(entry['tags']) & NUMBER_TAGS
+            previous_entry = entry
 
     # Update global tags after processing
     updated_global_tags['person'] = update_global_person_tags(updated_global_tags, processed_data)
@@ -429,13 +437,8 @@ def update_global_person_tags(global_tags, data):
     return global_tags['person'].union(tag for tag in PERSON_SEQUENCE if any(tag in entry['tags'] for entry in data))
 
 
-
-
-
-
-def add_all_tags(data):
+def process_entries(data):
     """Process each entry in the data to update person and number tags."""
-
     # Example usage
     tag_definitions = {
         'case': CASE_TAGS,
@@ -451,9 +454,7 @@ def add_all_tags(data):
     inflection_type = get_inflection_type(data) # inflection_type is 'conjugation' or 'declension'
 
     if not inflection_type:
-        return pd.Series([data, [], []])
-
-    
+        return data, [], []
 
     try: 
         data, invalid_forms, global_tags = verify_and_categorize_and_derogatorize_wrapper(data, tag_definitions, ALL_TAGS)
@@ -474,7 +475,16 @@ def add_all_tags(data):
         data = []
         global_tags = []
 
-    return pd.Series([invalid_forms + data, invalid_forms, global_tags])
+    return data, invalid_forms, global_tags
+
+
+
+def add_all_tags(data):
+    """Process each entry in the data to update person and number tags."""
+
+    data, invalid_forms, global_tags = process_entries(data)
+
+    return pd.Series([data + invalid_forms, invalid_forms, global_tags])
 
 @asset
 def add_all_tags_apply(
@@ -493,9 +503,8 @@ def add_all_tags_apply(
     )
     return add_all_tags_apply[['forms_with_added_tags', 'invalid_forms_in_add_tags']]
 
-
-# processed_data, invalid_forms, global_tags = process_entries(data)
-
-# print(processed_data + invalid_forms)
-# print("")
-# print(global_tags)
+if __name__ == "__main__":
+    processed_data, invalid_forms, global_tags = process_entries(data)
+    print(processed_data + invalid_forms)
+    print("")
+    print(global_tags)

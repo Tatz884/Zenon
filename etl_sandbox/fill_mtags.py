@@ -46,7 +46,7 @@ data = [{'form': 'większy', 'tags': ['comparative']}, {'form': 'największy', '
 
 # Tag categories
 CASE_TAGS =  {'nominative', 'genitive', 'dative', 'accusative', 'instrumental', 'locative', 'vocative'}
-TENSE_TAGS = {'present', 'past', 'future', 'conditional', 'imperative'}
+TENSE_TAGS = {'infinitive', 'present', 'past', 'future', 'conditional', 'imperative'}
 PERSON_TAGS = {'first-person', 'second-person', 'third-person', 'impersonal'}
 NUMBER_TAGS = {'singular', 'plural'}
 GENDER_TAGS = {'masculine', 'feminine', 'neuter'}
@@ -410,12 +410,15 @@ def process_person_tags(data, global_tags):
     is_first_iteration = True
     previous_entry = None
 
+    tenses_needing_person = {'present', 'past', 'future', 'conditional', 'imperative'}
+
     for entry in processed_data:
-        current_index = update_person_index(entry, previous_entry, current_index, current_number_tags, is_first_iteration)
-        validate_and_update_entry_tags(entry, current_index)
-        is_first_iteration = False
-        current_number_tags = set(entry['tags']) & NUMBER_TAGS
-        previous_entry = entry
+        if set(entry['tags']) & tenses_needing_person:
+            current_index = update_person_index(entry, previous_entry, current_index, current_number_tags, is_first_iteration)
+            validate_and_update_entry_tags(entry, current_index)
+            is_first_iteration = False
+            current_number_tags = set(entry['tags']) & NUMBER_TAGS
+            previous_entry = entry
 
     # Update global tags after processing
     updated_global_tags['person'] = update_global_person_tags(updated_global_tags, processed_data)
@@ -433,7 +436,7 @@ def update_global_person_tags(global_tags, data):
 
 
 def process_entries(data):
-    """Process each entry in the data to update person and number tags."""
+    """Process each entry in the data to update all tag categories."""
 
     # Example usage
     tag_definitions = {
@@ -468,6 +471,8 @@ def process_entries(data):
 
 processed_data, invalid_forms, global_tags = process_entries(data)
 
-print(processed_data + invalid_forms)
-print("")
-# print(global_tags)
+
+if __name__ == "__main__":
+    print(processed_data + invalid_forms)
+    print("")
+    print(global_tags)
