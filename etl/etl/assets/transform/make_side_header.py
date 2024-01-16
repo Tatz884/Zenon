@@ -1,4 +1,7 @@
 import pprint
+
+# This file is the helper function for map_by_tag.
+
 all_tags = {'case':('nominative', 'genitive', 'dative', 'accusative', 'instrumental', 'locative', 'vocative'),
                 'tense': ('present', 'past', 'future', 'conditional', 'imperative'),
                 'person': ('first-person', 'second-person', 'third-person', 'impersonal'),

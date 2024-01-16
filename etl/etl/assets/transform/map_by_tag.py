@@ -1,7 +1,19 @@
-from make_top_header import make_top_header
-from make_side_header import make_side_header
-from fill_mtags import process_entries
+try:
+    from etl.assets.transform.make_top_header import make_top_header
+    from etl.assets.transform.make_side_header import make_side_header
+    from etl.assets.transform.fill_mtags import process_entries
+except ImportError: # in case you want to execute the script directly
+    from make_top_header import make_top_header
+    from make_side_header import make_side_header
+    from fill_mtags import process_entries
 import pprint
+import pandas as pd
+from dagster import (
+    asset,
+    AssetExecutionContext,
+    get_dagster_logger,
+    MetadataValue
+)
 
 det = [{'form': '', 'source': 'declension', 'tags': ['table-tags']}, {'form': 'pl-decl-numeral', 'source': 'declension', 'tags': ['inflection-template']}, {'form': 'kilkunastu', 'tags': ['nominative', 'plural', 'virile'], 'source': 'declension'}, {'form': 'kilkanaście', 'tags': ['nominative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['genitive', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['dative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['accusative', 'plural', 'virile'], 'source': 'declension'}, {'form': 'kilkanaście', 'tags': ['accusative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastoma', 'tags': ['instrumental', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['locative', 'plural'], 'source': 'declension'}, {'form': 'kilkunastu', 'tags': ['plural', 'virile', 'vocative'], 'source': 'declension'}, {'form': 'kilkanaście', 'tags': ['plural', 'vocative'], 'source': 'declension'}]
 adj1 = [{'form': 'większy', 'tags': ['comparative']}, {'form': 'największy', 'tags': ['superlative']}, {'form': 'dużo', 'tags': ['adverb']}, {'form': 'duższy', 'tags': ['Middle', 'Polish', 'comparative']}, {'form': 'naduższy', 'tags': ['Middle', 'Polish', 'superlative']}, {'form': 'najduższy', 'tags': ['Middle', 'Polish', 'superlative']}, {'form': '', 'source': 'declension', 'tags': ['table-tags']}, {'form': 'pl-decl-adj-auto', 'source': 'declension', 'tags': ['inflection-template']}, {'form': 'duży', 'tags': ['masculine', 'nominative', 'singular', 'vocative'], 'source': 'declension'}, {'form': 'duże', 'tags': ['neuter', 'nominative', 'singular', 'vocative'], 'source': 'declension'}, {'form': 'duża', 'tags': ['feminine', 'nominative', 'singular', 'vocative'], 'source': 'declension'}, {'form': 'duzi', 'tags': ['nominative', 'plural', 'virile', 'vocative'], 'source': 'declension'}, {'form': 'duże', 'tags': ['nominative', 'nonvirile', 'plural', 'vocative'], 'source': 'declension'}, {'form': 'dużego', 'tags': ['genitive', 'masculine', 'neuter', 'singular'], 'source': 'declension'}, {'form': 'dużej', 'tags': ['feminine', 'genitive', 'singular'], 'source': 'declension'}, {'form': 'dużych', 'tags': ['genitive', 'plural'], 'source': 'declension'}, {'form': 'dużemu', 'tags': ['dative', 'masculine', 'neuter', 'singular'], 'source': 'declension'}, {'form': 'dużej', 'tags': ['dative', 'feminine', 'singular'], 'source': 'declension'}, {'form': 'dużym', 'tags': ['dative', 'plural'], 'source': 'declension'}, {'form': 'dużego', 'tags': ['accusative', 'animate', 'masculine', 'singular'], 'source': 'declension'}, {'form': 'duży', 'tags': ['accusative', 'inanimate', 'masculine', 'singular'], 'source': 'declension'}, {'form': 'duże', 'tags': ['accusative', 'neuter', 'singular'], 'source': 'declension'}, {'form': 'dużą', 'tags': ['accusative', 'feminine', 'singular'], 'source': 'declension'}, {'form': 'dużych', 'tags': ['accusative', 'plural', 'virile'], 'source': 'declension'}, {'form': 'duże', 'tags': ['accusative', 'nonvirile', 'plural'], 'source': 'declension'}, {'form': 'dużym', 'tags': ['instrumental', 'masculine', 'neuter', 'singular'], 'source': 'declension'}, {'form': 'dużą', 'tags': ['feminine', 'instrumental', 'singular'], 'source': 'declension'}, {'form': 'dużymi', 'tags': ['instrumental', 'plural'], 'source': 'declension'}, {'form': 'dużym', 'tags': ['locative', 'masculine', 'neuter', 'singular'], 'source': 'declension'}, {'form': 'dużej', 'tags': ['feminine', 'locative', 'singular'], 'source': 'declension'}, {'form': 'dużych', 'tags': ['locative', 'plural'], 'source': 'declension'}]
@@ -58,25 +70,7 @@ def get_inflection_type(data):
         return 'declension'
     return None  # Return None if 'conj' is not found or get_inflection_type returns None
 
-def map_by_tag(data, global_tags):
-    top_header = make_top_header(global_tags)
-    
-    side_header = make_side_header(global_tags)
 
-    # max_length = max(len(row) for row in top_header)
-    # # Append the vertical header to the horizontal header
-    # # Pad each row from the vertical header to match the max_length
-    # combined_2d_list = top_header + [row + [''] * (max_length - len(row)) for row in side_header]
-    # pprint.pprint(combined_2d_list)
-
-
-    top_left_corner, bottom_right_corner = create_padding_empty_lists(top_header, side_header)
-    modified_bottom_right_corner = process_dictionaries(data, top_header, side_header, bottom_right_corner)
-
-    output_grid = combine_2d_lists(top_left_corner, top_header, side_header, modified_bottom_right_corner)
-
-    pprint.pprint(output_grid, width=300)
-    return output_grid
 
 def create_integer_list(top_header):
     # The width of the 2D list is the length of the first sublist in top_header
@@ -90,9 +84,6 @@ def find_horizontal_index(top_header, dictionary):
     # Extract the tags from the dictionary
     tags = set(dictionary['tags'])
     pivot_row = None
-
-    if 'impersonal' in tags:
-        print(dictionary)
 
     # Iterate over each row in the top_header to find the pivot row
     for row in top_header:
@@ -199,6 +190,59 @@ def combine_2d_lists(top_left, top_right, bottom_left, bottom_right):
     combined = top_combined + bottom_combined
 
     return combined
+
+def map_by_tag(data,  global_tags):
+    # print("map_by_tag started")
+    # print("")
+    # print("current iteration is processing the following data:")
+    # print("")
+    # print(data)
+    try:
+        top_header = make_top_header(global_tags)
+        
+        side_header = make_side_header(global_tags)
+
+        top_left_corner, bottom_right_corner = create_padding_empty_lists(top_header, side_header)
+        modified_bottom_right_corner = process_dictionaries(data, top_header, side_header, bottom_right_corner)
+
+        output_grid = combine_2d_lists(top_left_corner, top_header, side_header, modified_bottom_right_corner)
+        return output_grid
+    except:
+        return None
+    
+def process_row(row):
+    global total_processed_count, failure_count
+    result = map_by_tag(row['forms_with_added_tags'], row['global_tags_in_add_tags'])
+    total_processed_count += 1
+    if result is None:
+        failure_count += 1
+    return result
+
+@asset
+def map_by_tag_apply(
+    context: AssetExecutionContext,
+    add_all_tags_apply: pd.DataFrame
+) -> pd.DataFrame:
+    log = get_dagster_logger()
+
+    df = add_all_tags_apply
+    map_by_tag_apply = pd.DataFrame()
+    # log.info(df.head(3).to_markdown())
+    global total_processed_count, failure_count
+    total_processed_count = 0
+    failure_count = 0
+    map_by_tag_apply[['map_by_tag']] = \
+    df.apply(process_row, axis=1)
+
+    context.add_output_metadata(
+        metadata={
+            "map_by_tag_preview": MetadataValue.md(map_by_tag_apply.map_by_tag.head(3).to_markdown()),
+            "total_processed_count": MetadataValue.float(total_processed_count),
+            "failure_count": MetadataValue.float(failure_count)
+        }
+    )
+    return map_by_tag_apply[['map_by_tag']]
+
 
 if __name__ == "__main__":
     data = det

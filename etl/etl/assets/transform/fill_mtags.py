@@ -501,7 +501,7 @@ def add_all_tags_apply(
             "forms_with_added_tags_preview": MetadataValue.md(add_all_tags_apply.forms_with_added_tags.head(3).to_markdown()),
         }
     )
-    return add_all_tags_apply[['forms_with_added_tags', 'invalid_forms_in_add_tags']]
+    return add_all_tags_apply[['forms_with_added_tags', 'invalid_forms_in_add_tags', 'global_tags_in_add_tags']]
 
 if __name__ == "__main__":
     processed_data, invalid_forms, global_tags = process_entries(data)

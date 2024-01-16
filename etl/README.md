@@ -32,8 +32,14 @@ You can specify new Python dependencies in `setup.py`.
 Tests are in the `etl_tests` directory and you can run tests using `pytest`:
 
 ```bash
+pytest etl_tests
+```
+--> Tatsuya Edit
+From ./zenon/, execute the following command
+```bash
 pytest ./etl
 ```
+
 
 ### Schedules and sensors
 
