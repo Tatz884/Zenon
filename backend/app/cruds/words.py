@@ -71,7 +71,7 @@ async def CockroachDB_connect():
         )
 
 
-async def fetch_data(conn, user_input: str, skip: int, limit: int, db_type: str):
+async def fetch_data_by_flattened_forms(conn, user_input: str, skip: int, limit: int, db_type: str):
     if db_type == "SQLite":
         cursor = conn.cursor()
         cursor.execute("""
@@ -80,6 +80,7 @@ async def fetch_data(conn, user_input: str, skip: int, limit: int, db_type: str)
                 pos,
                 glosses,
                 forms_json,
+                header_sizes,
                 lang
             FROM polish 
             WHERE flattened_forms 
@@ -98,6 +99,7 @@ async def fetch_data(conn, user_input: str, skip: int, limit: int, db_type: str)
                 pos,
                 glosses,
                 forms_json,
+                header_sizes,
                 lang
             FROM polish
             WHERE $1::TEXT ILIKE ANY(flattened_forms)
@@ -107,11 +109,55 @@ async def fetch_data(conn, user_input: str, skip: int, limit: int, db_type: str)
         return rows, None
 
 
-async def query_database(user_input: str, skip: int, limit: int, db_type: str):
+async def fetch_data_by_id(conn, user_input: int, db_type: str):
+    if db_type == "SQLite":
+        cursor = conn.cursor()
+        # cursor.execute("""
+        #     SELECT id,
+        #         original_form,
+        #         pos,
+        #         glosses,
+        #         forms_json,
+        #         header_sizes,
+        #         lang
+        #     FROM polish 
+        #     WHERE flattened_forms 
+        #     LIKE ? 
+        #     LIMIT ? 
+        #     OFFSET ?;
+        #     """, ('%' + user_input + '%', limit, skip))
+        print("sorry, the fetching data by id in SQLite is not")
+        print("implemeted yet!")
+        rows = cursor.fetchall()
+        columns = cursor.description
+        return rows, columns
+
+    elif db_type == "CockroachDB":
+        print("user_input is:")
+        print(user_input)
+        print(type(user_input))
+        rows = await conn.fetch('''
+            SELECT id,
+                original_form,
+                pos,
+                glosses,
+                forms_json,
+                header_sizes,
+                lang
+            FROM polish
+            WHERE id = $1;
+        ''', user_input) # Currently full match of any of flattened_forms.
+        print(rows)
+        return rows, None
+
+
+
+
+async def query_database_by_flattened_forms(user_input: str, skip: int, limit: int, db_type: str):
     if db_type == "SQLite":
         conn = await SQLite_connect()
         try:
-            rows, columns = await fetch_data(conn, user_input, skip, limit, db_type)
+            rows, columns = await fetch_data_by_flattened_forms(conn, user_input, skip, limit, db_type)
             if not rows:
                 raise HTTPException(status_code=404, detail="No database found")
             output = [await row_to_dict(row, columns) for row in rows]
@@ -122,7 +168,29 @@ async def query_database(user_input: str, skip: int, limit: int, db_type: str):
     elif db_type == "CockroachDB":
         conn = await CockroachDB_connect()
         try:
-            rows, _ = await fetch_data(conn, user_input, skip, limit, db_type)
+            rows, _ = await fetch_data_by_flattened_forms(conn, user_input, skip, limit, db_type)
+            return [dict(row) for row in rows]
+        except Exception as e:
+            print(f"Error loading data: {e}")
+        finally:
+            await conn.close()
+
+async def query_database_by_id(user_input: int,db_type: str):
+    if db_type == "SQLite":
+        conn = await SQLite_connect()
+        try:
+            rows, columns = await fetch_data_by_id(conn, user_input,db_type)
+            if not rows:
+                raise HTTPException(status_code=404, detail="No database found")
+            output = [await row_to_dict(row, columns) for row in rows]
+            return output
+        finally:
+            conn.close()
+
+    elif db_type == "CockroachDB":
+        conn = await CockroachDB_connect()
+        try:
+            rows, _ = await fetch_data_by_id(conn, user_input,db_type)
             return [dict(row) for row in rows]
         except Exception as e:
             print(f"Error loading data: {e}")
@@ -131,5 +199,5 @@ async def query_database(user_input: str, skip: int, limit: int, db_type: str):
 
 
 # Replace the old functions with the new refactored functions
-SQLite_sandbox = lambda user_input, skip=0, limit=10: query_database(user_input, skip, limit, "SQLite")
-CockroachDB_sandbox = lambda user_input, skip=0, limit=10: query_database(user_input, skip, limit, "CockroachDB")
+SQLite_sandbox = lambda user_input, skip=0, limit=10: query_database_by_flattened_forms(user_input, skip, limit, "SQLite")
+CockroachDB_sandbox = lambda user_input, skip=0, limit=10: query_database_by_flattened_forms(user_input, skip, limit, "CockroachDB")

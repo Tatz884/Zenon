@@ -101,7 +101,7 @@ def flatten_dict(d, parent_key='', sep='_'):
 def nested_dict_to_2d_list(nested_dict):
     # Flatten the dictionary
     flat_dict = flatten_dict(nested_dict)
-    print(flat_dict)
+    # print(flat_dict)
 
     # Calculate the number of rows and columns
     max_depth = max(key.count('_') for key in flat_dict) + 1

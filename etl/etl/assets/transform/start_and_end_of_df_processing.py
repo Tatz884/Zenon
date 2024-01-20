@@ -60,21 +60,21 @@ def finish_process_df(
 
     # horizontally concatenate all df.
     df = pd.concat([start_process_df, get_json_from_df, get_glosses_df, get_flattened_forms_df], axis=1)
-    df = df.sort_values(by='invalid_forms_percent', ascending=False)
+    # df = df.sort_values(by='invalid_forms_percent', ascending=False)
     finish_process_df = df
 
     context.add_output_metadata(
         metadata={
             "num_records": len(finish_process_df),  # Metadata can be any key-value pair
             "whole_df_preview": MetadataValue.md(df.head().to_markdown()),
-            "nest_forms_preview": MetadataValue.md(df.nest_forms.head().to_markdown()),
-            "invalid_forms_in_nest_forms": MetadataValue.md(df.invalid_forms_in_nest_forms.head().to_markdown()),
-            "invalid_forms_percents": MetadataValue.md(df.invalid_forms_percent.head().to_markdown()),
-            "invalid_forms_percent_average": MetadataValue.float(df.invalid_forms_percent.mean()),
+            # "nest_forms_preview": MetadataValue.md(df.nest_forms.head().to_markdown()),
+            # "invalid_forms_in_nest_forms": MetadataValue.md(df.invalid_forms_in_nest_forms.head().to_markdown()),
+            # "invalid_forms_percents": MetadataValue.md(df.invalid_forms_percent.head().to_markdown()),
+            # "invalid_forms_percent_average": MetadataValue.float(df.invalid_forms_percent.mean()),
         }
     )
 
-    finish_process_df = finish_process_df[['word', 'pos', 'lang', 'glosses', 'json_forms', 'flattened_forms']]
+    finish_process_df = finish_process_df[['word', 'pos', 'lang', 'glosses', 'json_forms', 'header_sizes', 'flattened_forms']]
 
     print(finish_process_df)
     return finish_process_df

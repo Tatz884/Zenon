@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ...schemas.words import WordInfoV2, WordInfoV2List
-from ...cruds.words import SQLite_sandbox, CockroachDB_sandbox
+from ...cruds.words import SQLite_sandbox, CockroachDB_sandbox, query_database_by_id
 from typing import List, Callable
 import os
 
@@ -17,22 +17,34 @@ async def get_suggestions(user_input: str, skip: int = 0, limit: int = 1):
         rows = await SQLite_sandbox(user_input, skip, limit)
     elif MODE == "dev_crDB":
         rows = await CockroachDB_sandbox(user_input, skip, limit)
-        print("this is dev_crDB: yet to be implemented!")
     elif MODE == "prod":
         rows = await CockroachDB_sandbox(user_input, skip, limit)
         print("this is production mode: yet to be implemented!")
 
     if rows is None:
         rows = [{"id":1, "original_form":"a", "pos":"a",
-                  "glosses":"a", "forms_json": "a", "flattened_forms": "a", "lang": "a"}]
+                  "glosses":"a", "forms_json": "a", "header_sizes": "a", "flattened_forms": "a", "lang": "a"}]
 
     return rows
 
 
 @router.get("/wordinfo/")
-async def get_word_info(query: str, wiktionary_id: int):
+async def get_word_info_by_id(user_input: int):
+
+    row = None
+    if MODE == "dev_SQLite":
+        row = await query_database_by_id(user_input, "SQLite")
+    elif MODE == "dev_crDB":
+        row = await query_database_by_id(user_input, "CockroachDB")
+    elif MODE == "prod":
+        row = await CockroachDB_sandbox(user_input, "CockroachDB")
+        print("this is production mode: yet to be implemented!")
+
+    if row is None:
+        row = [{"id":1, "original_form":"a", "pos":"a",
+                  "glosses":"a", "forms_json": "a", "header_sizes": "a", "flattened_forms": "a", "lang": "a"}]
     # Your logic to fetch declension or conjugation based on word type
     # Identify word type (noun, adjective, adverb, verb)
     # Fetch appropriate table (declension or conjugation) and return
-    pass
+    return row
 

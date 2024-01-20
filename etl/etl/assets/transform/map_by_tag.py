@@ -1,11 +1,11 @@
-try:
+try: # execute from dagster
     from etl.assets.transform.make_top_header import make_top_header
     from etl.assets.transform.make_side_header import make_side_header
-    from etl.assets.transform.fill_mtags import process_entries
+    from etl.assets.transform.add_all_missing_tags import process_entries
 except ImportError: # in case you want to execute the script directly
     from make_top_header import make_top_header
     from make_side_header import make_side_header
-    from fill_mtags import process_entries
+    from add_all_missing_tags import process_entries
 import pprint
 import pandas as pd
 from dagster import (
@@ -192,56 +192,85 @@ def combine_2d_lists(top_left, top_right, bottom_left, bottom_right):
     return combined
 
 def map_by_tag(data,  global_tags):
-    # print("map_by_tag started")
-    # print("")
-    # print("current iteration is processing the following data:")
-    # print("")
-    # print(data)
+    """
+    Create 2D list of list based on the forms.
+    Example output:
+    [['', 'plural', 'plural'],
+    ['', 'virile', 'nonvirile'],
+    ['nominative', 'kilkunastu', 'kilkanaście'],
+    ['genitive', '', 'kilkunastu'],
+    ['dative', '', 'kilkunastu'],
+    ['accusative', 'kilkunastu', 'kilkanaście'],
+    ['instrumental', '', 'kilkunastoma'],
+    ['locative', '', 'kilkunastu'],
+    ['vocative', 'kilkunastu', 'kilkanaście']]
+    """
     try:
         top_header = make_top_header(global_tags)
-        
         side_header = make_side_header(global_tags)
+
+        header_sizes = {'top':{'height':len(top_header), 'width':len(top_header[0]) + len(side_header[0])}, 
+                        'side':{'height':len(side_header), 'width':len(side_header[0])}}
 
         top_left_corner, bottom_right_corner = create_padding_empty_lists(top_header, side_header)
         modified_bottom_right_corner = process_dictionaries(data, top_header, side_header, bottom_right_corner)
 
         output_grid = combine_2d_lists(top_left_corner, top_header, side_header, modified_bottom_right_corner)
-        return output_grid
+        outcome = True
+        return output_grid, outcome, header_sizes
     except:
-        return None
+        outcome = False
+        return None, outcome, None
     
 def process_row(row):
-    global total_processed_count, failure_count
-    result = map_by_tag(row['forms_with_added_tags'], row['global_tags_in_add_tags'])
-    total_processed_count += 1
-    if result is None:
-        failure_count += 1
-    return result
+    output_grid, outcome, header_sizes = map_by_tag(row['forms_with_added_tags'], row['global_tags_in_add_tags'])
+    return pd.Series([output_grid, outcome, header_sizes])
 
 @asset
 def map_by_tag_apply(
     context: AssetExecutionContext,
-    add_all_tags_apply: pd.DataFrame
+    add_all_missing_tags_apply: pd.DataFrame
 ) -> pd.DataFrame:
+    """
+    Create the pd.Series of 2D list of list based on the forms.
+    Example row in output is:
+    [['', 'plural', 'plural'],
+    ['', 'virile', 'nonvirile'],
+    ['nominative', 'kilkunastu', 'kilkanaście'],
+    ['genitive', '', 'kilkunastu'],
+    ['dative', '', 'kilkunastu'],
+    ['accusative', 'kilkunastu', 'kilkanaście'],
+    ['instrumental', '', 'kilkunastoma'],
+    ['locative', '', 'kilkunastu'],
+    ['vocative', 'kilkunastu', 'kilkanaście']]
+
+    Note: In metadata, failure_rate_percentage here is based on the number of failure in map_by_tag,
+    out of the rows that succeeded in previous 'add_all_missing_tags'
+    """
     log = get_dagster_logger()
 
-    df = add_all_tags_apply
-    map_by_tag_apply = pd.DataFrame()
+    df = add_all_missing_tags_apply
+    # map_by_tag_apply = pd.DataFrame()
+    map_by_tag_apply = df
+
     # log.info(df.head(3).to_markdown())
-    global total_processed_count, failure_count
-    total_processed_count = 0
-    failure_count = 0
-    map_by_tag_apply[['map_by_tag']] = \
+    map_by_tag_apply[['map_by_tag', 'map_by_tag_outcome', 'header_sizes']] = \
     df.apply(process_row, axis=1)
+
+    failure_count = int(((map_by_tag_apply['map_by_tag_outcome']== False) & (map_by_tag_apply['add_tag_processed']== True)).sum())
+    total_rows_count = int((add_all_missing_tags_apply['add_tag_processed']== True).sum())
+    failure_rate = failure_count / total_rows_count
+    failure_rate_percentage = round(failure_rate * 100, 2)
 
     context.add_output_metadata(
         metadata={
             "map_by_tag_preview": MetadataValue.md(map_by_tag_apply.map_by_tag.head(3).to_markdown()),
-            "total_processed_count": MetadataValue.float(total_processed_count),
-            "failure_count": MetadataValue.float(failure_count)
+            "failure_example": MetadataValue.md(map_by_tag_apply[(map_by_tag_apply['map_by_tag_outcome']== False) & (map_by_tag_apply['add_tag_processed']== True)].head(10).to_markdown()),
+            "failure_count": MetadataValue.int(failure_count),
+            "failure_percent": MetadataValue.float(failure_rate_percentage),
         }
     )
-    return map_by_tag_apply[['map_by_tag']]
+    return map_by_tag_apply[['map_by_tag', 'map_by_tag_outcome', 'header_sizes']]
 
 
 if __name__ == "__main__":

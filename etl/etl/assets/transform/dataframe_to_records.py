@@ -25,7 +25,7 @@ def dataframe_to_records(
     logger = get_dagster_logger()
 
     # must be in the order of the database used later
-    finish_process_df = finish_process_df[['word', 'pos', 'glosses', 'json_forms', 'flattened_forms', 'lang']]
+    finish_process_df = finish_process_df[['word', 'pos', 'glosses', 'json_forms', 'header_sizes', 'flattened_forms', 'lang']]
 
     records = finish_process_df.reset_index().to_records(index=False)
 

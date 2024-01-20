@@ -77,6 +77,7 @@ def load_into_cockroachDB_dev(dataframe_to_records: List):
                 pos VARCHAR(10),
                 glosses TEXT,
                 forms_json JSONB,
+                header_sizes JSONB,
                 flattened_forms TEXT[],
                 lang VARCHAR(10)
             )
@@ -154,6 +155,7 @@ def load_into_cockroachDB_prod(dataframe_to_records: List):
                 pos VARCHAR(10),
                 glosses TEXT,
                 forms_json JSONB,
+                header_sizes JSONB,
                 flattened_forms TEXT[],
                 lang VARCHAR(10)
             )

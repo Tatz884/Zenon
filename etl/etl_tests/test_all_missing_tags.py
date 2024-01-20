@@ -1,5 +1,5 @@
 import pytest
-from etl.assets.transform.fill_mtags import process_entries
+from etl.assets.transform.add_all_missing_tags import process_entries
 from unittest.mock import patch
 
 

@@ -185,9 +185,9 @@ def process_forms(forms):
 @asset
 def nest_forms_apply(
     context: AssetExecutionContext,
-    add_all_tags_apply: pd.DataFrame
+    add_all_missing_tags_apply: pd.DataFrame
 ):
-    df = add_all_tags_apply 
+    df = add_all_missing_tags_apply 
     df[['nest_forms', 'invalid_forms_in_nest_forms', 'invalid_forms_percent']]= df['forms_with_added_tags'].apply(process_forms)
 
     context.add_output_metadata(

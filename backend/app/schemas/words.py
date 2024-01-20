@@ -7,6 +7,7 @@ class WordInfoV2(BaseModel):
     pos: str
     glosses: str
     forms_json: str
+    header_sizes: str
     flattened_forms: Optional[str] = Field(default=None)
     lang: Optional[str] = Field(default=None)
 

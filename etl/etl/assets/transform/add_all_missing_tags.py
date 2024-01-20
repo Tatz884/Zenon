@@ -453,8 +453,10 @@ def process_entries(data):
 
     inflection_type = get_inflection_type(data) # inflection_type is 'conjugation' or 'declension'
 
+    is_processed = False
+
     if not inflection_type:
-        return data, [], []
+        return data, [], [], is_processed
 
     try: 
         data, invalid_forms, global_tags = verify_and_categorize_and_derogatorize_wrapper(data, tag_definitions, ALL_TAGS)
@@ -469,39 +471,51 @@ def process_entries(data):
 
         if inflection_type == 'conjugation':
             data, global_tags = process_person_tags(data, global_tags)
+
+        is_processed = True
     
     except:
         invalid_forms = data
         data = []
         global_tags = []
+        is_processed = False
 
-    return data, invalid_forms, global_tags
+    return data, invalid_forms, global_tags, is_processed
 
 
 
-def add_all_tags(data):
+def add_all_missing_tags(data):
     """Process each entry in the data to update person and number tags."""
 
-    data, invalid_forms, global_tags = process_entries(data)
+    data, invalid_forms, global_tags, is_processed = process_entries(data)
 
-    return pd.Series([data + invalid_forms, invalid_forms, global_tags])
+    return pd.Series([data + invalid_forms, invalid_forms, global_tags, is_processed])
 
 @asset
-def add_all_tags_apply(
+def add_all_missing_tags_apply(
     context: AssetExecutionContext,
     start_process_df: pd.DataFrame
 ) -> pd.DataFrame:
     
     df = start_process_df
-    add_all_tags_apply = pd.DataFrame()
-    add_all_tags_apply[['forms_with_added_tags', 'invalid_forms_in_add_tags', 'global_tags_in_add_tags']]= df['forms'].apply(add_all_tags)
+    # add_all_missing_tags_apply = pd.DataFrame()
+    add_all_missing_tags_apply = df
+    add_all_missing_tags_apply[['forms_with_added_tags', 'invalid_forms_in_add_tags', 'global_tags_in_add_tags', 'add_tag_processed']]= df['forms'].apply(add_all_missing_tags)
+
+    failure_count = int((add_all_missing_tags_apply['add_tag_processed']== False).sum())
+    total_rows_count = len(add_all_missing_tags_apply)
+    failure_rate = failure_count / total_rows_count
+    failure_rate_percentage = round(failure_rate * 100, 2)
 
     context.add_output_metadata(
         metadata={
-            "forms_with_added_tags_preview": MetadataValue.md(add_all_tags_apply.forms_with_added_tags.head(3).to_markdown()),
+            "forms_with_added_tags_preview": MetadataValue.md(add_all_missing_tags_apply.forms_with_added_tags.head(3).to_markdown()),
+            "failure_example": MetadataValue.md(add_all_missing_tags_apply[add_all_missing_tags_apply['add_tag_processed']== False].head(10).to_markdown()),
+            "failure_count": MetadataValue.int(failure_count),
+            "failure_percent": MetadataValue.float(failure_rate_percentage),
         }
     )
-    return add_all_tags_apply[['forms_with_added_tags', 'invalid_forms_in_add_tags', 'global_tags_in_add_tags']]
+    return add_all_missing_tags_apply[['forms_with_added_tags', 'invalid_forms_in_add_tags', 'global_tags_in_add_tags', 'add_tag_processed']]
 
 if __name__ == "__main__":
     processed_data, invalid_forms, global_tags = process_entries(data)

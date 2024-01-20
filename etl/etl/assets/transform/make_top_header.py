@@ -1,8 +1,8 @@
 import pprint
 try:
-    from etl.assets.transform.fill_mtags import process_entries
+    from add_all_missing_tags import process_entries
 except ImportError:
-    from fill_mtags import process_entries
+    from etl.assets.transform.add_all_missing_tags import process_entries
 import json
 
 # This file is the helper function for map_by_tag.
