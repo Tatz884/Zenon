@@ -27,8 +27,8 @@ that extracted word information from [English Wiktionary](https://en.wiktionary.
 I would like to appreciate [Dr. Tatu Ylonen](https://ylonen.org/) for the work in Wiktextract,
 as well as anonymous Wiktionary editors, all of who made this project possible.
 
-This project was inspired by the search engine for Polish declension Odmiana.NET,
-and the one for conjugation Cooljugator: the Smart Verb Conjugator.
+This project was inspired by the search engine for Polish declension [Odmiana.NET](https://odmiana.net/),
+and the one for conjugation [Cooljugator: the Smart Verb Conjugator](https://cooljugator.com/).
 These previous works focuses solely on either declension or conjugation, while
 this project covers both declension and conjugation from the single searchbox.
 
