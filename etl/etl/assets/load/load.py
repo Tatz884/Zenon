@@ -14,7 +14,8 @@ import urllib.parse
 import ssl
 import asyncpg
 # from elasticsearch import Elasticsearch, helpers
-# import time
+import time
+
 
 @asset
 def load_into_sqlite(finish_process_df: pd.DataFrame):
@@ -66,11 +67,11 @@ def load_into_cockroachDB_dev(dataframe_to_records: List):
 
 
     async def load_data(conn):
+
+        # try to execute the  
         await conn.execute('''
             DROP TABLE IF EXISTS polish;
-        ''')
 
-        await conn.execute('''
             CREATE TABLE IF NOT EXISTS polish (
                 id SERIAL PRIMARY KEY,
                 original_form VARCHAR(100),
@@ -80,7 +81,9 @@ def load_into_cockroachDB_dev(dataframe_to_records: List):
                 header_sizes JSONB,
                 flattened_forms TEXT[],
                 lang VARCHAR(10)
-            )
+            );
+                           
+            CREATE INDEX idx_flattened_forms ON polish USING gin (flattened_forms);
         ''')
 
         await conn.copy_records_to_table('polish', records=dataframe_to_records)
@@ -105,7 +108,6 @@ def load_into_cockroachDB_dev(dataframe_to_records: List):
             await conn.close()
             print("connection is closed")
 
-    print("connection is closed")
 
     asyncio.run(bulk_insert(dataframe_to_records))
 
@@ -144,11 +146,10 @@ def load_into_cockroachDB_prod(dataframe_to_records: List):
 
 
     async def load_data(conn):
-        await conn.execute('''
-            DROP TABLE IF EXISTS polish;
-        ''')
 
         await conn.execute('''
+            DROP TABLE IF EXISTS polish;
+
             CREATE TABLE IF NOT EXISTS polish (
                 id SERIAL PRIMARY KEY,
                 original_form VARCHAR(100),
@@ -158,7 +159,9 @@ def load_into_cockroachDB_prod(dataframe_to_records: List):
                 header_sizes JSONB,
                 flattened_forms TEXT[],
                 lang VARCHAR(10)
-            )
+            );
+                           
+            CREATE INDEX idx_flattened_forms ON polish USING gin (flattened_forms);
         ''')
 
         await conn.copy_records_to_table('polish', records=dataframe_to_records)

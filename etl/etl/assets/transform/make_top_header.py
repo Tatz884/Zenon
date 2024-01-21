@@ -128,7 +128,7 @@ def sort_dict(d):
 
     return sorted_dict
 
-def increment_nested_dict(d):
+def increment_nested_dict(d, counter=[0]):
     """
     Modify the nested dictionary by replacing 0s with incrementing integers.
 
@@ -139,20 +139,14 @@ def increment_nested_dict(d):
     Returns:
     dict: The modified dictionary.
     """
-
-
-    counter = 0
     for key, value in d.items():
-        # print("key: " + key)
-        # print("value: ")
-        # print(value)
-        # print("counter: ")
-        # print(counter)
         if isinstance(value, dict):
             increment_nested_dict(value, counter)
-        elif value == 0:
-            d[key] = counter
-            counter += 1
+        elif isinstance(value, int):
+            d[key] = counter[0]
+            counter[0] += 1
+        else:
+            raise ValueError("Check increment_nested_dict in make_top_header.py")
     return d
 
 def flatten_dict(d, parent_key='', sep='_'):
@@ -214,7 +208,7 @@ def make_top_header(global_tags):
 
     sorted_dict = sort_dict(initial_dict)
 
-    horizontal_positions = increment_nested_dict(sorted_dict)
+    horizontal_positions = increment_nested_dict(sorted_dict, counter = [0])
 
     top_header = nested_dict_to_2d_list(horizontal_positions)
 
@@ -223,7 +217,7 @@ def make_top_header(global_tags):
 
 if __name__ == "__main__":
     data = adj1
-    processed_data, invalid_forms, global_tags =  process_entries(data)
+    processed_data, invalid_forms, global_tags, is_processed =  process_entries(data)
     print(global_tags)
     top_header = make_top_header(all_tags)
     pprint.pprint(top_header, width=200)

@@ -26,6 +26,8 @@ global_tags_verb = {'case':(),
                 'virility':(),
                 'animacy':('animate', 'inanimate')}
 
+global_tags_verb2 = {'case': set(), 'tense': {'present', 'infinitive', 'imperative', 'conditional', 'past', 'future'}, 'person': {'first-person', 'third-person', 'second-person', 'impersonal'}, 'number': {'plural', 'singular'}, 'gender': {'neuter', 'feminine', 'masculine'}, 'virility': {'nonvirile', 'virile'}, 'animacy': set()}
+
 
 
 def initiate_nested_vertical_dictionary(global_tags):
@@ -98,7 +100,7 @@ def flatten_dict(d, parent_key='', sep='_'):
             items.append((new_key, v))
     return dict(items)
 
-def nested_dict_to_2d_list(nested_dict):
+def nested_dict_to_2d_list(nested_dict, data):
     # Flatten the dictionary
     flat_dict = flatten_dict(nested_dict)
     # print(flat_dict)
@@ -110,7 +112,6 @@ def nested_dict_to_2d_list(nested_dict):
 
     # # Initialize the 2D list
     table = [["" for _ in range(max_depth)] for _ in range(num_rows)]
-
     # # Fill the 2D list
     for key, row_index in flat_dict.items():
         keys = key.split('_')
@@ -132,7 +133,7 @@ def fill_empty_strings(matrix):
                 row[i] = row[i-1]
     return matrix
 
-def make_side_header(global_tags):
+def make_side_header(global_tags, data):
     if bool(global_tags['case']) and not bool(global_tags['tense']): # declension
         order = ('nominative', 'genitive', 'dative', 'accusative', 'instrumental', 'locative', 'vocative')
         vertical_positions = {k: i for i, k in enumerate(order) if k in global_tags['case']}
@@ -144,13 +145,13 @@ def make_side_header(global_tags):
     else: # conjugation
         vertical_positions = initiate_nested_vertical_dictionary(global_tags)
         sorted_vertical_positions = sort_vertical_positions(vertical_positions)
-        vertical_positions = increment_nested_dict(sorted_vertical_positions)
-        side_header = nested_dict_to_2d_list(vertical_positions)
+        vertical_positions = increment_nested_dict(sorted_vertical_positions, counter=[0])
+        side_header = nested_dict_to_2d_list(vertical_positions, data)
         # side_header = fill_empty_strings(side_header)
 
     return side_header
 
 if __name__ == "__main__":
-    global_tags = global_tags_noun
+    global_tags = global_tags_verb2
     side_header = make_side_header(global_tags)
     pprint.pprint(side_header)
