@@ -189,7 +189,7 @@ def nested_dict_to_2d_list(nested_dict):
 
     return table
 
-def fill_empty_strings(matrix):
+def fill_empty_strings_top(matrix):
     rows = len(matrix)
     cols = len(matrix[0])
 
@@ -212,7 +212,6 @@ def make_top_header(global_tags):
 
     top_header = nested_dict_to_2d_list(horizontal_positions)
 
-    # output_grid = fill_empty_strings(output_grid)
     return top_header
 
 if __name__ == "__main__":

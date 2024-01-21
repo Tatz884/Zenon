@@ -14,7 +14,8 @@
     and the one for conjugation <a href="https://cooljugator.com/">Cooljugator: the Smart Verb Conjugator</a>.<br>
     These previous works focuses solely on either declension or conjugation, while<br>
     this project covers both declension and conjugation from the single searchbox.<br></p>
-<p>The data was based on <a href="https://github.com/tatuylonen/wiktextract">Wiktextract project</a>, that extracted word information from <a href="https://en.wiktionary.org">English Wiktionary</a>.<br>
+<p>The data originates from <a href="https://kaikki.org">kaikki.org</a> of <a href="https://github.com/tatuylonen/wiktextract">Wiktextract project</a>,<br>
+    that extracted word information from <a href="https://en.wiktionary.org">English Wiktionary</a>.<br>
     I would like to appreciate <a href="https://ylonen.org/">Dr. Tatu Ylonen</a> for the work in Wiktextract,<br>
     as well as anonymous Wiktionary editors, all of whom made this project possible.<br><br></p>
 

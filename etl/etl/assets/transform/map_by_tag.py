@@ -1,10 +1,10 @@
 try: # execute from dagster
-    from etl.assets.transform.make_top_header import make_top_header
-    from etl.assets.transform.make_side_header import make_side_header
+    from etl.assets.transform.make_top_header import make_top_header, fill_empty_strings_top
+    from etl.assets.transform.make_side_header import make_side_header, fill_empty_strings_side
     from etl.assets.transform.add_all_missing_tags import process_entries
 except ImportError: # in case you want to execute the script directly
-    from make_top_header import make_top_header
-    from make_side_header import make_side_header
+    from make_top_header import make_top_header, fill_empty_strings_top
+    from make_side_header import make_side_header, fill_empty_strings_side
     from add_all_missing_tags import process_entries
 import pprint
 import traceback
@@ -216,6 +216,8 @@ def map_by_tag(data,  global_tags):
 
         top_left_corner, bottom_right_corner = create_padding_empty_lists(top_header, side_header)
         modified_bottom_right_corner = process_dictionaries(data, top_header, side_header, bottom_right_corner)
+        top_header = fill_empty_strings_top(top_header)
+        side_header = fill_empty_strings_side(side_header)
         output_grid = combine_2d_lists(top_left_corner, top_header, side_header, modified_bottom_right_corner)
         outcome = True
 

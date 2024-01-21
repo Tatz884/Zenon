@@ -27,8 +27,8 @@
     async function fetchSuggestions(query) {
         isLoading.set(true);
         try {
-            let development_address = `http://localhost:8000/api/v1/words/suggestions/?user_input=${encodeURIComponent(query)}&skip=0&limit=1`
-            let production_address = `https://zenon-backend.fly.dev/api/v1/words/suggestions/?user_input=${encodeURIComponent(query)}&skip=0&limit=1`
+            let development_address = `http://localhost:8000/api/v1/words/suggestions/?user_input=${encodeURIComponent(query)}&skip=0&limit=10`
+            let production_address = `https://zenon-backend.fly.dev/api/v1/words/suggestions/?user_input=${encodeURIComponent(query)}&skip=0&limit=10`
             const response = await fetch(production_address);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -53,14 +53,33 @@
     }
 </script>
 
-<input type="text" placeholder="Type your query..." bind:value={$userInput}>
+<div class="suggestions-container">
+    <input type="text" placeholder="Type your query..." bind:value={$userInput}>
 
-{#if $isLoading}
-    <div>Loading...</div>
-{:else}
-    <div id="suggestions">
-        {#each $suggestions as suggestion}
-            <a href="/{suggestion.id}">{suggestion.original_form} {suggestion.pos}</a>
-        {/each}
-    </div>
-{/if}
+    {#if $isLoading}
+        <div id="suggestions">Loading...</div>
+    {:else}
+        <div id="suggestions">
+            {#each $suggestions as suggestion}
+                <a href="/{suggestion.id}">{suggestion.original_form} {suggestion.pos}</a><br>
+            {/each}
+        </div>
+    {/if}
+</div>
+
+<style>
+    .suggestions-container {
+        position: relative;
+    }
+    #suggestions {
+        position: absolute;
+        top: 100%; /* Position below the input field */
+        left: 0;
+        width: 100%; /* Match the width of the input field */
+        background: white; /* Optional: for better visibility */
+        z-index: 1000; /* Ensure it's above other content */
+        max-height: 300px; /* Optional: limit height */
+        overflow-y: auto; /* Optional: add scroll for long lists */
+        box-shadow: 0px 4px 8px rgba(0,0,0,0.1); /* Optional: add shadow for depth */
+    }
+</style>

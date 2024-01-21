@@ -120,7 +120,7 @@ def nested_dict_to_2d_list(nested_dict, data):
 
     return table
 
-def fill_empty_strings(matrix):
+def fill_empty_strings_side(matrix):
     """
     Fills out empty strings in each row of a 2D list with the string to their left.
     If a row only contains empty strings, it remains unchanged.
@@ -147,7 +147,6 @@ def make_side_header(global_tags, data):
         sorted_vertical_positions = sort_vertical_positions(vertical_positions)
         vertical_positions = increment_nested_dict(sorted_vertical_positions, counter=[0])
         side_header = nested_dict_to_2d_list(vertical_positions, data)
-        # side_header = fill_empty_strings(side_header)
 
     return side_header
 

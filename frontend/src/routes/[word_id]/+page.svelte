@@ -6,9 +6,11 @@
 
     // Reactive declaration for forms and headerSizesParsed
     $: forms = data.word[0].forms_json ? JSON.parse(data.word[0].forms_json) : [];
+    console.log('forms:', forms); // Add this line to log 'forms'
     $: headerSizesParsed = data.word[0].header_sizes ? JSON.parse(data.word[0].header_sizes) : { top: { width: 1, height: 1}, side: { width: 1, height: 1 } };
 
     $: processedForms = processForms(forms, headerSizesParsed);
+    console.log('processedForms:', processedForms); // Add this line to log 'processedForms'
 
     function processForms(forms, headerSizes) {
         // Initialize an array to keep track of processed cells for rowspan
@@ -53,7 +55,9 @@
                 return { value: cell, rowspan, colspan, isTopHeader, isSideHeader };
             });
         }).filter(row => row.some(cell => cell !== null)); // Filter out rows that are completely processed
+
     }
+
 
     // Helper function to check if all cells in the span are equal
     function allEqual(forms, rowIndex, rowspan, colIndex, colspan) {
@@ -67,15 +71,22 @@
         return true;
     }
 </script>
-
+<br>
+<br>
+<br>
+<br>
 <table>
     {#each processedForms as row}
         <tr>
             {#each row as cell}
                 {#if cell}
                     <!-- Use <th> for header cells and <td> for others -->
-                    {#if cell.isTopHeader || cell.isSideHeader}
-                        <th rowspan={cell.rowspan} colspan={cell.colspan}>
+                    {#if cell.isTopHeader}
+                        <th rowspan={cell.rowspan} colspan={cell.colspan} class="top-header">
+                            {@html cell.value}
+                        </th>
+                    {:else if cell.isSideHeader}
+                        <th rowspan={cell.rowspan} colspan={cell.colspan} class="side-header">
                             {@html cell.value}
                         </th>
                     {:else}
@@ -97,5 +108,11 @@
         border: 1px solid black; /* Sets a black border for each cell */
         padding: 5px; /* Optional: Adds some padding inside cells */
         text-align: center; /* Optional: Centers text in cells */
+    }
+    .top-header {
+        background-color: #d9ebff;
+    }
+    .side-header {
+        background-color: #eff7ff;
     }
 </style>
