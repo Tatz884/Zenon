@@ -7,11 +7,11 @@ The search engine for case inflections in Polish.
 
 # Functionality
 
-Type a word of any forms in the searchbox. Then it displays the word lists that have the matches with the form that you entered.
+Type a Polish word of any forms in the searchbox. Then it displays the word lists that have the matches with the form that you entered.
 Upon clicking a word, then you can see the inflection table of that word.
 
 > [!NOTE] 
-> Only the word with full match to your query will show up in the word list. The partial-match search is yet to be implemented.
+> Only the words that have full match to your query will show up in the word list. The partial-match search is yet to be implemented.
 
 # Development roadmap
 
@@ -27,7 +27,12 @@ that extracted word information from [English Wiktionary](https://en.wiktionary.
 I would like to appreciate [Dr. Tatu Ylonen](https://ylonen.org/) for the work in Wiktextract,
 as well as anonymous Wiktionary editors, all of who made this project possible.
 
-#Links:
+This project was inspired by the search engine for Polish declension Odmiana.NET,
+and the one for conjugation Cooljugator: the Smart Verb Conjugator.
+These previous works focuses solely on either declension or conjugation, while
+this project covers both declension and conjugation from the single searchbox.
+
+# Links:
 [Dagster UI](https://zenon-etl.fly.dev/) for ETL orchestration of this project
 
 
